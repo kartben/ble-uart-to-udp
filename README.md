@@ -24,12 +24,12 @@ Simply run ```node index.js```
 
 If no parameters are set, the following defaults are used:
 
-```-a "" // connect to the first device discovered
--s 6e400001b5a3f393e0a9e50e24dcca9e // look for service of adafruits bluefruit UART
--RXChar 6e400003b5a3f393e0a9e50e24dcca9e // look for adafruits bluefruit RX characterstic
--TXChar 6e400002b5a3f393e0a9e50e24dcca9e // look for adafruits bluefruit TX characterstic
--b localhost // bind to localhost
--p 8000	//use port 8000```
+    -a "" //connect to the first device discovered
+    -s 6e400001b5a3f393e0a9e50e24dcca9e //look for service of adafruits bluefruit UART
+    -RXChar 6e400003b5a3f393e0a9e50e24dcca9e //look for adafruits bluefruit RX characterstic
+    -TXChar 6e400002b5a3f393e0a9e50e24dcca9e //look for adafruits bluefruit TX characterstic
+    -b localhost //bind to localhost
+    -p 8000	//use port 8000
 
 #### Bind IP and Port
 ```-b localhost -p 8000```
