@@ -9,36 +9,39 @@ var chrWrite
 var connections = []
 var uids=[]
 
-var HOST = "localhost"
-var PORT = 8000
+var settings = {
 
-var UART = '6e400001b5a3f393e0a9e50e24dcca9e'
-var RX = '6e400003b5a3f393e0a9e50e24dcca9e'
-var TX = '6e400002b5a3f393e0a9e50e24dcca9e'
-var address
+	HOST :"localhost",
+	PORT : 8000,
+
+	UART : '6e400001b5a3f393e0a9e50e24dcca9e',
+	RX : '6e400003b5a3f393e0a9e50e24dcca9e',
+	TX : '6e400002b5a3f393e0a9e50e24dcca9e',
+	ADDRESS : ""
+}
 
 if(process.argv.indexOf("-a") != -1){ 
-				    address = process.argv[process.argv.indexOf("-a") + 1]; 
+				    settings.ADDRESS = process.argv[process.argv.indexOf("-a") + 1]; 
 }
 
 if(process.argv.indexOf("-s") != -1){ 
-				    UART = process.argv[process.argv.indexOf("-s") + 1]; 
+				    settings.UART = process.argv[process.argv.indexOf("-s") + 1]; 
 }
 
 if(process.argv.indexOf("-RXChar") != -1){ 
-				    RX = process.argv[process.argv.indexOf("-RXChar") + 1]; 
+				    settings.RX = process.argv[process.argv.indexOf("-RXChar") + 1]; 
 }
 
 if(process.argv.indexOf("-TXChar") != -1){ 
-				    TX = process.argv[process.argv.indexOf("-TXChar") + 1]; 
+				    settings.TX = process.argv[process.argv.indexOf("-TXChar") + 1]; 
 }
 
 if(process.argv.indexOf("-b") != -1){ 
-				    HOST = process.argv[process.argv.indexOf("-b") + 1]; 
+				    settings.HOST = process.argv[process.argv.indexOf("-b") + 1]; 
 }
 
 if(process.argv.indexOf("-p") != -1){ 
-				    PORT = process.argv[process.argv.indexOf("-p") + 1]; 
+				    settings.PORT = process.argv[process.argv.indexOf("-p") + 1]; 
 }
 
 console.log("start...")
@@ -81,7 +84,7 @@ function ready(chrRead, chrWrite) {
         console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
     });
     
-}).listen(PORT, HOST);
+}).listen(settings.PORT, settings.HOST);
 }
 
 noble.on('stateChange', function(state) {
@@ -100,7 +103,7 @@ noble.on('discover', function(p) {
 				perif = p
 				console.log("Found "+ p.advertisement.localName + " " + p.address)
 				
-				if (address == null || p.address === address) {
+				if (settings.ADDRESS == "" || p.address === settings.ADDRESS) {
 				console.log("found adafruit!")
 
 				console.log("stopping scanning...")
@@ -118,9 +121,9 @@ noble.on('discover', function(p) {
 							  services.forEach(function(s, serviceId) {
 									s.characteristics.forEach(function(ch, charId) {
 								
-										if (ch.uuid === RX) {
+										if (ch.uuid === settings.RX) {
 											chrRead = ch
-										} else if (ch.uuid === TX) {
+										} else if (ch.uuid === settings.TX) {
 											chrWrite = ch
 										}
 									})
