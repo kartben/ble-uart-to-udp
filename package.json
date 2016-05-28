@@ -1,0 +1,10 @@
+{
+  "name": "bbowl",
+  "version": "1.0.0",
+  "author": "Simon Kölsch <echox@echox.de>",
+  "description": "service for exposing a low energy bluetooth UART device via sockets",
+  "repository": { "type": "git", "url":"https://github.com/echox/bbowl" },
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "noble":	"1.5.0"}
+}
