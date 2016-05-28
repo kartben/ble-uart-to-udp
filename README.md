@@ -8,7 +8,7 @@ It uses the noble library as the bluetooth stack.
 ## Installation
 Run ```npm install``` to fetch the dependencies.
 
-## Starting
+## Start
 
 Simply run ```node index.js```
 
