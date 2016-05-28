@@ -3,22 +3,42 @@ var net = require('net');
 
 var perif;
 
-var HOST = "localhost"
-var PORT = 8000
-
-var uart = '6e400001b5a3f393e0a9e50e24dcca9e'
-var rx = '6e400003b5a3f393e0a9e50e24dcca9e'
-var tx = '6e400002b5a3f393e0a9e50e24dcca9e'
-var address
-
 var chrRead
 var chrWrite
 
 var connections = []
 var uids=[]
 
+var HOST = "localhost"
+var PORT = 8000
+
+var UART = '6e400001b5a3f393e0a9e50e24dcca9e'
+var RX = '6e400003b5a3f393e0a9e50e24dcca9e'
+var TX = '6e400002b5a3f393e0a9e50e24dcca9e'
+var address
+
 if(process.argv.indexOf("-a") != -1){ 
 				    address = process.argv[process.argv.indexOf("-a") + 1]; 
+}
+
+if(process.argv.indexOf("-s") != -1){ 
+				    UART = process.argv[process.argv.indexOf("-s") + 1]; 
+}
+
+if(process.argv.indexOf("-RXChar") != -1){ 
+				    RX = process.argv[process.argv.indexOf("-RXChar") + 1]; 
+}
+
+if(process.argv.indexOf("-TXChar") != -1){ 
+				    TX = process.argv[process.argv.indexOf("-TXChar") + 1]; 
+}
+
+if(process.argv.indexOf("-b") != -1){ 
+				    HOST = process.argv[process.argv.indexOf("-b") + 1]; 
+}
+
+if(process.argv.indexOf("-p") != -1){ 
+				    PORT = process.argv[process.argv.indexOf("-p") + 1]; 
 }
 
 console.log("start...")
@@ -98,9 +118,9 @@ noble.on('discover', function(p) {
 							  services.forEach(function(s, serviceId) {
 									s.characteristics.forEach(function(ch, charId) {
 								
-										if (ch.uuid === rx) {
+										if (ch.uuid === RX) {
 											chrRead = ch
-										} else if (ch.uuid === tx) {
+										} else if (ch.uuid === TX) {
 											chrWrite = ch
 										}
 									})
