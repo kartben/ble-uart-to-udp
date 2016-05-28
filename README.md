@@ -49,4 +49,3 @@ Use the specified characteristic of the service as RX.
 #### Filter TX Characteristic UUID
 ```-TXChar 6e400002b5a3f393e0a9e50e24dcca9e```
 Use the specified characteristic of the service as TX.
-

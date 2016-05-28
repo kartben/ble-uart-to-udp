@@ -1,10 +1,12 @@
 var noble = require('noble')
-var net = require('net');
+var net = require('net')
 
-var perif;
+var perif
 
-var chrRead
-var chrWrite
+var uart = {
+	tx : null,
+	rx : null
+}
 
 var connections = []
 var uids=[]
@@ -44,21 +46,23 @@ if(process.argv.indexOf("-p") != -1){
 				    settings.PORT = process.argv[process.argv.indexOf("-p") + 1]; 
 }
 
-console.log("start...")
+console.log("bbowl started")
+console.log("settings: " + JSON.stringify(settings,null,2))
 
 process.on('exit', function() {
 				if (perif != null) {
-								peripheral.once('disconnect');
+					console.log("goodbye, disconnecting...")
+					peripheral.once('disconnect');
 				}
 })	
 
 var writeToBT = function(data) {
-				console.log("> "+data)
-				chrWrite.write(new Buffer(data))
+				console.log("->\n"+data.slice(0,-1))
+				uart.tx.write(new Buffer(data))
 }
 
 var writeToSockets = function(data) {
-			console.log("< "+data)
+			console.log("<-\n" + data.slice(0,-1))
 			connections.forEach(function (sck) {
 							sck.write(data)
 			})
@@ -66,34 +70,41 @@ var writeToSockets = function(data) {
 
 function ready(chrRead, chrWrite) {
 
-		console.log("connected and ready!")
+		console.log("connected to bluetooth le UART device")
 
+		uart.rx = chrRead
+		uart.tx = chrWrite
 
-		chrRead.on('data', writeToSockets)
-		chrRead.notify(true)
+		uart.rx.on('data', writeToSockets)
+		uart.rx.notify(true)
+
+		console.log("RX is setup")
 
 		net.createServer(function(sock) {
     
-    console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
-    
-    sock.on('data', writeToBT)
+    	console.log("connected [" + sock.remoteAddress + ":" + sock.remotePort + "]");
 
-		connections.push(sock)
+    	sock.on('data', writeToBT)
+			connections.push(sock)
+
+			sock.on('close', function(data) {
+        console.log("closed [" + sock.remoteAddress + ":" + sock.remotePort + "]");
+    	});
     
-    sock.on('close', function(data) {
-        console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
-    });
-    
-}).listen(settings.PORT, settings.HOST);
+		}).listen(settings.PORT, settings.HOST);
 }
 
 noble.on('stateChange', function(state) {
 
-	console.log("State change: " + state)
+	console.log("bluetooth state: [" + state + "]")
 
 	if(state==="poweredOn") {				
 		noble.startScanning(uids, false,function(error) {
-			console.log("scanning startet\nerror: ",error)
+			if (!error) {
+				console.log("scanning for bluetooth le devices...")
+			} else {
+				console.log("problems during scanning for bluetooth le devices: " + error)
+			}
 		})
 	}
 })
@@ -101,27 +112,28 @@ noble.on('stateChange', function(state) {
 noble.on('discover', function(p) {
 
 				perif = p
-				console.log("Found "+ p.advertisement.localName + " " + p.address)
+				console.log("found "+ p.advertisement.localName + " " + p.address)
 				
 				if (settings.ADDRESS == "" || p.address === settings.ADDRESS) {
-				console.log("found adafruit!")
 
 				console.log("stopping scanning...")
 				noble.stopScanning();
 
-				console.log("connecting...")
+				console.log("trying to connect to " + p.advertisement.localName + "["+p.address+"]")
 				p.connect(function() {
 
 					p.discoverAllServicesAndCharacteristics(function(error, services, characteristics){
 
-								console.log("Error? " + error)
-								console.log("Services: " + services)
-								console.log("Characteristics: " + characteristics)
+						if (!error) {
+								console.log("[---") 
+								console.log("Services: \n" + "["+services+"]")
+								console.log("Characteristics: \n" + "[" + characteristics + "]")
+								console.log("---]")
 
 								var chrRead
 								var chrWrite
 							  services.forEach(function(s, serviceId) {
-									if (serviceId == settings.UART) {
+									if (s.uuid == settings.UART) {
 										s.characteristics.forEach(function(ch, charId) {
 												
 											if (ch.uuid === settings.RX) {
@@ -138,6 +150,9 @@ noble.on('discover', function(p) {
 							} else {
 								console.log("no UART service/charactersitics found...")
 							}
+						} else {
+							console.log(error)
+						}
 							
 					})
 				})
