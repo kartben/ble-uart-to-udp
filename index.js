@@ -118,23 +118,28 @@ noble.on('discover', function(p) {
 								console.log("Services: " + services)
 								console.log("Characteristics: " + characteristics)
 
+								var chrRead
+								var chrWrite
 							  services.forEach(function(s, serviceId) {
-									s.characteristics.forEach(function(ch, charId) {
-								
-										if (ch.uuid === settings.RX) {
-											chrRead = ch
-										} else if (ch.uuid === settings.TX) {
-											chrWrite = ch
-										}
-									})
+									if (serviceId == settings.UART) {
+										s.characteristics.forEach(function(ch, charId) {
+												
+											if (ch.uuid === settings.RX) {
+												chrRead = ch
+											} else if (ch.uuid === settings.TX) {
+												chrWrite = ch
+											}
+										})
+									}
 								})
-					
-							ready(chrRead, chrWrite)
+
+							if (chrRead != null && chrWrite != null) {
+								ready(chrRead, chrWrite)
+							} else {
+								console.log("no UART service/charactersitics found...")
+							}
+							
 					})
-
 				})
-				
-
 				}
 })
-
