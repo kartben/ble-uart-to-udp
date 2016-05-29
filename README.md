@@ -14,9 +14,11 @@ It uses the noble library as the bluetooth stack.
 ## Installation
 Run ```npm install``` to fetch the dependencies.
 
+Run ```npm install -g``` to install as system-wide binary ```bbowl```.
+
 ## Start
 
-Simply run ```node index.js```
+Simply run ```./bbowl.js``` or after a global installation ```bbowl```.
 
 ### Command Line Switches
 

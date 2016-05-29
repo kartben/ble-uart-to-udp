@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var noble = require('noble')
 var net = require('net')
 
