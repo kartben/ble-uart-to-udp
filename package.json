@@ -6,7 +6,7 @@
   "repository": { "type": "git", "url":"https://github.com/echox/bbowl" },
   "license": "BSD-2-Clause",
   "dependencies": {
-    "noble":	"1.5.0"},
+    "noble":	"1.6.0"},
 	"bin" : {
 		"bbowl": "bbowl.js"}
 }
