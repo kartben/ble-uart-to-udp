@@ -87,12 +87,13 @@ function ready(chrRead, chrWrite) {
     	console.log("connected [" + sock.remoteAddress + ":" + sock.remotePort + "]");
 
     	sock.on('data', writeToBT)
+			sock.on('close', function(data) {
+        			console.log("closed [" + sock.remoteAddress + ":" + sock.remotePort + "]");
+							connections.splice(connections.indexOf(sock), 1);
+			});
+
 			connections.push(sock)
 
-			sock.on('close', function(data) {
-        console.log("closed [" + sock.remoteAddress + ":" + sock.remotePort + "]");
-    	});
-    
 		}).listen(settings.PORT, settings.HOST);
 }
 
