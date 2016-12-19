@@ -3,10 +3,17 @@
   "version": "1.0.1",
   "author": "Simon Kölsch <echox@echox.de>",
   "description": "service for exposing a low energy bluetooth UART device via sockets",
-  "repository": { "type": "git", "url":"https://github.com/echox/bbowl" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/echox/bbowl"
+  },
   "license": "BSD-2-Clause",
   "dependencies": {
-    "noble":	"1.6.0"},
-	"bin" : {
-		"bbowl": "bbowl.js"}
+    "mqttsn-packet": "0.0.2",
+    "noble": ">=1.6.0",
+    "prettyjson": "^1.2.1"
+  },
+  "bin": {
+    "bbowl": "bbowl.js"
+  }
 }
