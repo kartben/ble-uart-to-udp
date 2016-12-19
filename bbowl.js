@@ -4,17 +4,25 @@ var noble = require('noble')
 
 var prettyjson = require('prettyjson');
 
-var mqttsn = require('mqttsn-packet'),
-    mqttsnParser = mqttsn.parser();
-mqttsnParser.on('packet', function(packet) {
-    console.log(prettyjson.render(packet));
-});
- 
+var mqttsn = require('mqttsn-packet');
+
+var createMqttForwarder = function(udpClient) {
+    var parser = mqttsn.parser();
+
+    parser.on('packet', function(packet) {
+        console.log(prettyjson.render(packet));
+        var buffer = mqttsn.generate(packet) ;
+        udpClient.send(buffer, 0, buffer.length, settings.PORT, settings.HOST, function(err, bytes) {
+        });
+
+    });
+    return parser;
+}
+
 var dgram = require('dgram');
 
 var perif
 
-var connections = []
 var uids = []
 
 var settings = {
@@ -35,13 +43,11 @@ process.on('exit', function() {
 })
 
 var writeToUdp = function(client) {
+    var mqttForwarder = createMqttForwarder(client);
     return function(data) {
         console.log('Received from UART: ', data.slice(0, -1));
-        mqttsnParser.parse(data);
+        mqttForwarder.parse(data); // use this method to reconstitute full MQTT-SN packet
 
-        client.send(data, 0, data.length, settings.PORT, settings.HOST, function(err, bytes) {
-            if (err) throw err;
-        });
     }
 }
 
@@ -55,9 +61,9 @@ function ready(chrRead, chrWrite) {
 
     // create a UDP connection to the MQTT-SN broker for this newly connected micro:bit
     var client = dgram.createSocket('udp4');
+
     client.on('message', function(data, remote) {
         console.log('Received from UDP: ', data.slice(0, -1));
-        mqttsnParser.parse(data);
         uart.tx.write(data, true); // write without response
     });
 
