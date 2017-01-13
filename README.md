@@ -4,4 +4,6 @@ The bridge maintains one UDP socket per BLE devices. A message received from the
 
 Useful to e.g create a transparent bridge to an MQTT-SN gateway.
 
+Note: while the bridge typically doesn't care about the actual packets that it forwards, the current implementation actually tries to parse MQTT-SN packets for debugger purposes, hence a dependency that you may want to remove if you use other protocols.
+
 Adapted from https://github.com/echox/bbowl.
