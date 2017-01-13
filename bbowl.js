@@ -42,12 +42,12 @@ process.on('exit', function() {
     }
 })
 
-var writeToUdp = function(client) {
-    var mqttForwarder = createMqttForwarder(client);
-    return function(data) {
-        console.log('Received from UART: ', data.slice(0, -1));
-        mqttForwarder.parse(data); // use this method to reconstitute full MQTT-SN packet
+var writeToUdp = function(client, deviceId) {
+    var mqttForwarder = createMqttForwarder(client, deviceId);
 
+    return function(data) {
+        console.log('Received from UART [' + deviceId + ']: ', data);
+        mqttForwarder.parse(data); // use this method to reconstitute full MQTT-SN packet
     }
 }
 
@@ -59,16 +59,10 @@ function ready(chrRead, chrWrite) {
     uart.rx = chrRead
     uart.tx = chrWrite
 
-    // create a UDP connection to the MQTT-SN broker for this newly connected micro:bit
-    var client = dgram.createSocket('udp4');
-
-    client.on('message', function(data, remote) {
-        console.log('Received from UDP: ', data.slice(0, -1));
-        uart.tx.write(data, true); // write without response
-    });
-
     uart.rx.notify(true);
-    uart.rx.on('data', writeToUdp(client))
+    var deviceId = uart.rx._noble.address; 
+    TXs[deviceId] = uart.tx;
+    uart.rx.on('data', writeToUdp(client, deviceId))
 }
 
 noble.on('stateChange', function(state) {
