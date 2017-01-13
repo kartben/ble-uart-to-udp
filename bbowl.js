@@ -4,22 +4,54 @@ var noble = require('noble')
 
 var prettyjson = require('prettyjson');
 
-var mqttsn = require('mqttsn-packet');
+var mqttsn = require('mqttsn-packet'),
+    mqttsnparser = mqttsn.parser();
 
-var createMqttForwarder = function(udpClient) {
+var createMqttForwarder = function(udpClient, deviceId) {
     var parser = mqttsn.parser();
+
+    parser.on('error', function(err) {
+        console.log('MQTT-SN parse error:', err); // log error and ignore it.
+    })
 
     parser.on('packet', function(packet) {
         console.log(prettyjson.render(packet));
-        var buffer = mqttsn.generate(packet) ;
-        udpClient.send(buffer, 0, buffer.length, settings.PORT, settings.HOST, function(err, bytes) {
-        });
+        try {
+            // encapsulate mqtt-sn packet
+            encapsulatedPacket  = {
+                cmd: 'Encapsulated message',
+                wirelessNodeId: deviceId,
+                encapsulated: mqttsn.generate(packet)
+            }
+            var buffer = mqttsn.generate(encapsulatedPacket);
+            udpClient.send(buffer, 0, buffer.length, settings.PORT, settings.HOST)
+        } catch (e) {
+            console.log(e)// skip
+        }
 
     });
     return parser;
 }
 
+var TXs = {} ; 
+
+var udpMqttParser = mqttsn.parser();
+udpMqttParser.on('packet', function(packet) {
+    if(packet.cmd === 'Encapsulated message') {
+        console.log(prettyjson.render(packet));
+        TXs[packet.wirelessNodeId].write(packet.encapsulated, true);
+    }
+});
+
 var dgram = require('dgram');
+// create a UDP connection to the MQTT-SN broker
+var client = dgram.createSocket('udp4');
+
+// whenever data arrives on the UDP connection to the MQTT-SN broker, send it to the MQTT-SN parser
+client.on('message', function(data, remote) {
+    console.log('Received from UDP: ', data);
+    udpMqttParser.parse(data);
+});
 
 var perif
 
@@ -28,10 +60,11 @@ var uids = []
 var settings = {
 
     HOST: "127.0.0.1",
+//    HOST: "192.168.0.63",
     PORT: 1884,
 
     UART: '6e400001b5a3f393e0a9e50e24dcca9e',
-    RX:  '6e400002b5a3f393e0a9e50e24dcca9e',
+    RX: '6e400002b5a3f393e0a9e50e24dcca9e',
     TX: '6e400003b5a3f393e0a9e50e24dcca9e'
 }
 
@@ -60,9 +93,9 @@ function ready(chrRead, chrWrite) {
     uart.tx = chrWrite
 
     uart.rx.notify(true);
-    var deviceId = uart.rx._noble.address; 
-    TXs[deviceId] = uart.tx;
-    uart.rx.on('data', writeToUdp(client, deviceId))
+    var uuid = uart.tx._peripheralId; 
+    TXs[uuid] = uart.tx;
+    uart.rx.on('data', writeToUdp(client, uuid))
 }
 
 noble.on('stateChange', function(state) {
